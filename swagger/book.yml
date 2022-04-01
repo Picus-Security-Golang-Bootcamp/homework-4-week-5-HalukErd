@@ -1,0 +1,109 @@
+swagger: "2.0"
+info:
+  description: "Assignment for Week-5 BookStoreApi"
+  version: "1.0.0"
+  title: "Swagger BookStore"
+  termsOfService: "http://swagger.io/terms/"
+  contact:
+    email: "erd.haluk@gmail.com"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "localhost:8080"
+basePath: "/api/v2"
+tags:
+  - name: "book"
+    description: "Everything about your books"
+  - name: "author"
+    description: "Everything about authors"
+schemes:
+  - "https"
+  - "http"
+paths:
+  /book:
+    get:
+      tags:
+        - "book"
+      summary: "Gets all books"
+      operationId: "getBooks"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "Success"
+
+parameters:
+  Pagelength:
+    name: pagelength
+    in: query
+    description: Number of records to return
+    type: "integer"
+    format: "int32"
+  Startindex:
+    name: startindex
+    in: query
+    description: Start index for paging
+    type: "integer"
+    format: "int32"
+definitions:
+  Author:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        format: "uuid"
+        description: "Author id with uuid format"
+      name:
+        type: "string"
+  Book:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        format: "uuid"
+        description: "Book id with uuid format"
+      name:
+        type: "string"
+      genre:
+        type: "string"
+      pages:
+        type: "integer"
+        format: "int32"
+      publisher:
+        type: "string"
+      authorId:
+        type: "string"
+        format: "uuid"
+  PaginationResponse:
+    type: "object"
+    properties:
+      pageLength:
+        type: "integer"
+        format: "int32"
+        description: "Page Length"
+      page:
+        type: "integer"
+        format: "int32"
+        description: "Current page index"
+      totalPages:
+        type: "integer"
+        format: "int32"
+        description: "Total page size"
+      sort:
+        type: "string"
+        description: "Page sort type"
+
+
+  ApiResponse:
+    type: "object"
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+      type:
+        type: "string"
+      message:
+        type: "string"
+externalDocs:
+  description: "Find out more"
+  url: "https://github.com/halukerd/KodluyoruzGoBootcamp/05-Week5-homework-4-HalukErd"

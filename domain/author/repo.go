@@ -12,8 +12,14 @@ type AuthorRepo struct {
 	db *gorm.DB
 }
 
+var RepoInstance *AuthorRepo
+var once sync.Once
+
 func NewAuthorRepo(db *gorm.DB) *AuthorRepo {
-	return &AuthorRepo{db: db}
+	once.Do(func() {
+		RepoInstance = &AuthorRepo{db: db}
+	})
+	return RepoInstance
 }
 
 func (a *AuthorRepo) Migrations() {

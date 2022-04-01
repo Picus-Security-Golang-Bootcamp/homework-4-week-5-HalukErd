@@ -3,12 +3,27 @@ package postgres
 import (
 	"fmt"
 	"os"
+	"sync"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-func NewPsqlDB() (*gorm.DB, error) {
+var DbInstance *gorm.DB
+var once sync.Once
+
+func NewPsqlDB() *gorm.DB {
+	once.Do(func() {
+		db, err := connectPsqlDB()
+		if err != nil {
+			panic(err)
+		}
+		DbInstance = db
+	})
+	return DbInstance
+}
+
+func connectPsqlDB() (*gorm.DB, error) {
 	dataSourceName := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s",
 		os.Getenv("LIBRARY_DB_HOST"),
 		os.Getenv("LIBRARY_DB_PORT"),

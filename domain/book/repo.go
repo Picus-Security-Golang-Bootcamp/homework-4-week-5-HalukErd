@@ -2,7 +2,7 @@ package book
 
 import (
 	"fmt"
-	"github.com/HalukErd/Week5Assignment/pkg"
+	"github.com/HalukErd/Week5Assignment/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"math"
@@ -13,8 +13,14 @@ type BookRepo struct {
 	db *gorm.DB
 }
 
+var RepoInstance *BookRepo
+var once sync.Once
+
 func NewBookRepo(db *gorm.DB) *BookRepo {
-	return &BookRepo{db: db}
+	once.Do(func() {
+		RepoInstance = &BookRepo{db: db}
+	})
+	return RepoInstance
 }
 
 func (b *BookRepo) Migrations() {
@@ -61,8 +67,8 @@ func (b *BookRepo) GetBooksWithAuthor(authorID uuid.UUID) (Books, error) {
 	return books, nil
 }
 
-// GetBooksOrderedByPages orders by pages asc
-func (b *BookRepo) GetBooksOrderedByPages() (Books, error) {
+// GetBooksOrderedByPageLength orders by pages asc
+func (b *BookRepo) GetBooksOrderedByPageLength() (Books, error) {
 	var books Books
 	if err := b.db.Order("pages asc").Find(&books).Error; err != nil {
 		return nil, err
@@ -96,7 +102,7 @@ func (b *BookRepo) GetOnlyNamesOfBookAndAuthorWith() (map[string]string, error) 
 }
 
 // GetBooksOrderedByPagesWithPaginationLol get books with pagination ordered by pages
-func (b *BookRepo) GetBooksOrderedByPagesWithPaginationLol(pagination pkg.Pagination) (Books, error) {
+func (b *BookRepo) GetBooksOrderedByPagesWithPaginationLol(pagination models.Pagination) (Books, error) {
 	var books Books
 	var count int64
 	b.db.Model(&Book{}).Count(&count)
