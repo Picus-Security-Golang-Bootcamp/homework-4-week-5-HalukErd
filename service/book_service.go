@@ -21,7 +21,7 @@ func NewBookService(repo *book.BookRepo) *BookService {
 	return bookService
 }
 
-func (serv *BookService) getAllBooksOrderedByPageLength() ([]api.Book, error) {
+func (serv *BookService) GetAllBooksOrderedByPageLength() ([]api.Book, error) {
 	bookEntities, err := serv.bookRepo.GetBooksOrderedByPageLength()
 	if err != nil {
 		return nil, err

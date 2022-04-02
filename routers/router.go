@@ -2,7 +2,9 @@ package routers
 
 import (
 	"context"
+	"encoding/json"
 	routers "github.com/HalukErd/Week5Assignment/routers/api"
+	httpErrors "github.com/HalukErd/Week5Assignment/routers/http_errors"
 	"github.com/HalukErd/Week5Assignment/service"
 	_ "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -13,16 +15,16 @@ import (
 	"time"
 )
 
-type ApiController struct {
+type ApiRouter struct {
 	bookService   *service.BookService
 	authorService *service.AuthorService
 }
 
-func NewApiController(bookService *service.BookService, authorService *service.AuthorService) *ApiController {
-	return &ApiController{bookService: bookService, authorService: authorService}
+func NewApiController(bookService *service.BookService, authorService *service.AuthorService) *ApiRouter {
+	return &ApiRouter{bookService: bookService, authorService: authorService}
 }
 
-func (cont *ApiController) InitRouter() {
+func (apiRouter *ApiRouter) InitRouter() {
 	r := mux.NewRouter()
 
 	if err := http.ListenAndServe(":8080", nil); err != nil {
@@ -30,11 +32,11 @@ func (cont *ApiController) InitRouter() {
 	}
 	rV1 := r.PathPrefix("/api/v1").Subrouter()
 
-	cont.InitBookRouter(rV1.PathPrefix("/book").Subrouter())
-	cont.InitAuthorRouter(rV1.PathPrefix("/author").Subrouter())
+	apiRouter.InitBookRouter(rV1.PathPrefix("/book").Subrouter())
+	apiRouter.InitAuthorRouter(rV1.PathPrefix("/author").Subrouter())
 
 	srv := &http.Server{
-		Addr:         "0.0.0.0:8090",
+		Addr:         "0.0.0.0:8080",
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
 		IdleTimeout:  time.Second * 60,
@@ -50,12 +52,32 @@ func (cont *ApiController) InitRouter() {
 	ShutdownServer(srv, time.Second*10)
 }
 
-func (cont *ApiController) InitAuthorRouter(r *mux.Router) {
+func (apiRouter *ApiRouter) InitAuthorRouter(r *mux.Router) {
 	r.HandleFunc("/", routers.GetAllAuthors)
 }
 
-func (cont *ApiController) InitBookRouter(r *mux.Router) {
-	r.HandleFunc("/", routers.GetAllBooks)
+func (apiRouter *ApiRouter) InitBookRouter(r *mux.Router) {
+	r.HandleFunc("/", apiRouter.GetAllBooks)
+}
+
+func (apiRouter *ApiRouter) GetAllBooks(w http.ResponseWriter, req *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+	books, err := apiRouter.bookService.GetAllBooksOrderedByPageLength()
+	if err != nil {
+		w.Write([]byte(httpErrors.
+			ParseErrors(httpErrors.BadRequest).
+			Error()))
+		return
+	}
+
+	booksData, err := json.Marshal(books)
+	if err != nil {
+		w.Write([]byte(httpErrors.
+			ParseErrors(httpErrors.BadRequest).
+			Error()))
+		return
+	}
+	w.Write(booksData)
 }
 
 func ShutdownServer(srv *http.Server, timeout time.Duration) {
